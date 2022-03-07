@@ -17,30 +17,7 @@ namespace TaskSample
             var modified = ReadMSAccess();
             var original = GetGuns();
 
-            //DataView dataView = new DataView(modified);
-            //dataView.RowFilter = $"ID > 2";
-
-            StringBuilder sb = new StringBuilder();
-
-            //foreach(DataRow dr in modified.Rows)
-            //{
-            //    DataView dv = new DataView(original);
-            //    dv.RowFilter = $"ID = {dr["ID"]}";
-
-            //    string newStatus = dr["Status"].ToString();                    
-            //    if (dv.Count > 0  && newStatus != dv.ToTable().Rows[0]["Status"].ToString())
-            //    {
-            //        sb.Append($"UPDATE dbo.Campaign SET Status = '{newStatus}' WHERE [ID] = '{dr["ID"]}' ; ");
-            //    }
-            //    else if(dv.Count == 0)
-            //    {
-            //        sb.Append($"INSERT INTO [dbo].[Campaign] VALUES ('{dr["ID"]}'," +
-            //            $"'{dr["First_Name"]}','{dr["Last_Name"]}','{dr["Status"]}','{dr["Entry_Date"]}') ; ");
-            //    }
-
-
-            //}
-            
+            StringBuilder sb = new StringBuilder();       
 
 
             var mod = GetModifiedRows(original, modified);
@@ -56,7 +33,8 @@ namespace TaskSample
                         $"'{dr["First_Name"]}','{dr["Last_Name"]}','{dr["Status"]}','{dr["Entry_Date"]}') ; \n");
             }
 
-            UpdatedData(sb.ToString());
+            string test = sb.ToString();
+           // UpdatedData(sb.ToString());
         }
 
         public static DataTable ReadMSAccess()
@@ -116,24 +94,13 @@ namespace TaskSample
                     myConnection.Close();
                 }
             }
-        }
-
-
-
-        public static void InsertData(DataTable dt)
-        {
-            using (SqlConnection myConnection = new SqlConnection(ConfigurationManager.ConnectionStrings["PROD"].ConnectionString))
-            {
-                using (SqlBulkCopy sqlBulkCopy = new SqlBulkCopy(myConnection))
-                {
-                    sqlBulkCopy.DestinationTableName = "dbo.Campaign";
-                    myConnection.Open();
-                    sqlBulkCopy.WriteToServer(dt);
-                    myConnection.Close();
-                }
-            }
-        }
-
+        }     
+        /// <summary>
+        /// Get Modified Rows
+        /// </summary>
+        /// <param name="Old"></param>
+        /// <param name="New"></param>
+        /// <returns></returns>
         private static DataTable GetModifiedRows(DataTable Old, DataTable New)
         {
             var a = from  n in New.AsEnumerable()
@@ -144,14 +111,19 @@ namespace TaskSample
             return a.Any() ? a.CopyToDataTable(): Old.Clone();
 
         }
-
+        /// <summary>
+        /// Get New Rows
+        /// </summary>
+        /// <param name="Old"></param>
+        /// <param name="New"></param>
+        /// <returns></returns>
         private static DataTable GetNewRows(DataTable Old, DataTable New)
         {
-            var a = New.AsEnumerable().Select(b => b.Field<int>("ID").ToString()).Except(Old.AsEnumerable().Select(c => c.Field<string>("ID"))).ToList();
+            var modifiedIds = New.AsEnumerable().Select(b => b.Field<int>("ID").ToString()).Except(Old.AsEnumerable().Select(c => c.Field<string>("ID"))).ToList();
     
-           var d = New.AsEnumerable().Where(b => a.Contains(b.Field<int>("ID").ToString()));
+            var modifiedRows = New.AsEnumerable().Where(b => modifiedIds.Contains(b.Field<int>("ID").ToString()));
 
-            return d.Any() ? d.CopyToDataTable() : New.Clone();
+            return modifiedRows.Any() ? modifiedRows.CopyToDataTable() : New.Clone();
         }
     }
 }
