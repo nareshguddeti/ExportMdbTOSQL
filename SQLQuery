@@ -1,0 +1,4 @@
+
+Select T2.ID2, Sum(T1.ID1) Over(Parition by T2.ID2)
+from Table1 T1
+join Table2 T2 on T1.ID1 = T2.ID2
