@@ -1,0 +1,41 @@
+
+BEGIN
+If OBJECT_ID('tempdb..#TempTable') IS NOT NULL
+	BEGIN 
+		DROP TABLE #TempTable
+	END
+
+Create Table #TempTable
+(ID varchar(10),FirstName varchar(10), LastName varchar(10), Status varchar(10))
+
+
+ insert into #TempTable
+SELECT * FROM OPENROWSET('Microsoft.ACE.OLEDB.12.0',
+                'EXCEL 12.0;DataBase=C:\NARESH\Test.xlsx;Extended Properties=EXCEL 12.0 Xml;HDR=YES', [Sheet1$]);
+
+WITH Modified As
+(
+SELECT O.ID, O.Status, T.Status as UpdatedStatus 
+from Original O
+join #TempTable T on O.Id = T.Id and O.Status != T.Status
+)
+Update Modified Set Status = UpdatedStatus;
+
+
+WITH New as
+(
+select ID from #TempTable
+Except
+select ID from Original
+)
+Insert into Original
+Select T.*
+From #TempTable T
+Inner Join New n on n.ID = T.ID;
+
+
+End
+
+
+
+
