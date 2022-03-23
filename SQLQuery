@@ -7,3 +7,12 @@ join Table2 T2 on T1.ID1 = T2.ID2
 SELECT Customercity, 
        SUM(Orderamount) OVER(PARTITION BY Customercity) TotalOrderAmount
 FROM [dbo].[Orders];
+
+
+//New Query to format
+
+declare @var nvarchar(10);
+
+set @var = 'K04-56-79'
+
+select  SUBSTRING(@var,1,3)+SUBSTRING(@var,5,2)+REPLICATE('0',5-LEN(SUBSTRING(@var,8,10)))+ SUBSTRING(@var,8,10)
